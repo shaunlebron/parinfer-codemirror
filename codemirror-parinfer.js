@@ -50,12 +50,13 @@ function activate(cm) {
       cm.setSelections(selections);
     } else {
       cm.setCursor(result.cursorLine, result.cursorX);
-      prevCursorLine = result.cursorLine;
-      prevCursorX = result.cursorX;
     }
-    monitorCursor = true;
+    setTimeout(function(){ monitorCursor = true; }, 0);
 
     cm.scrollTo(scroller.scrollLeft, scroller.scrollTop);
+
+    prevCursorLine = result.cursorLine;
+    prevCursorX = result.cursorX;
   }
 
   cm.on('cursorActivity', function(cm) {
