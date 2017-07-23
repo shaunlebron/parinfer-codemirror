@@ -3,12 +3,26 @@ function activate(cm) {
   var cursorTimeout;
   var monitorCursor = true;
 
+  var prevCursorX;
+  var prevCursorLine;
+
+  function convertChanges(changes) {
+    return changes.map(function(change) {
+      return {
+        x: change.from.ch,
+        lineNo: change.from.line,
+        oldText: change.removed.join('\n'),
+        newText: change.text.join('\n')
+      };
+    });
+  }
+
   function fixText(cm, changes) {
-    if (changes) {
-      console.log('processing after change');
-    } else {
-      console.log('processing after cursor movement');
-    }
+    // if (changes) {
+    //   console.log('processing after change');
+    // } else {
+    //   console.log('processing after cursor movement');
+    // }
 
     var text = cm.getValue();
     var hasSelection = cm.somethingSelected();
@@ -19,10 +33,12 @@ function activate(cm) {
     var options = {
       cursorLine: cursor.line,
       cursorX: cursor.ch,
-      // prevCursorLine:
-      // prevCursorX:
-      // changes: convertChanges(changes),
+      prevCursorLine: prevCursorLine,
+      prevCursorX: prevCursorX
     };
+    if (changes) {
+      options.changes = convertChanges(changes);
+    }
     var result = parinfer.smartMode(text, options);
     if (text === result.text) {
       return;
@@ -34,6 +50,8 @@ function activate(cm) {
       cm.setSelections(selections);
     } else {
       cm.setCursor(result.cursorLine, result.cursorX);
+      prevCursorLine = result.cursorLine;
+      prevCursorX = result.cursorX;
     }
     monitorCursor = true;
 
