@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+<head>
+  <link rel="stylesheet" href="libs/codemirror/lib/codemirror.css">
+  <script src="libs/codemirror/lib/codemirror.js"></script>
+  <script src="libs/codemirror/mode/clojure/clojure.js"></script>
+  <script src="libs/parinfer.js"></script>
+  <script src="parinfer-codemirror.js"></script>
+
+  <style>
+    body { background: #f0f0f0; }
+    .parinfer-error { background: #FFD5D5; }
+  </style>
+
+</head>
+<body>
+  <script>
+
+var cm = CodeMirror(document.body);
+
+cm.setValue(`
+(defn foo
+  "hello, this is a docstring"
+  [a b]
+  (let [sum (+ a b)
+        prod (* a b)]
+     {:sum sum
+      :prod prod}))
+`);
+
+parinferCodeMirror.init(cm);
+
+  </script>
+</body>
+</html>

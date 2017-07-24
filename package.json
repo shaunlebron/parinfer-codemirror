@@ -1,7 +1,7 @@
 {
-  "name": "codemirror-parinfer",
+  "name": "parinfer-codemirror",
   "version": "1.0.0",
-  "main": "codemirror-parinfer.js",
+  "main": "parinfer-codemirror.js",
   "dependencies": {
     "codemirror": "^5.28.0",
     "parinfer": "^3.6.0"
