@@ -35,7 +35,8 @@ var SMART_MODE = 'smart';
 
 var MODES = [PAREN_MODE, INDENT_MODE, SMART_MODE];
 
-var ERROR_CLASSNAME = 'parinfer-error';
+var CLASSNAME_ERROR = 'parinfer-error';
+var CLASSNAME_PARENTRAIL = 'parinfer-paren-trail';
 
 //------------------------------------------------------------------------------
 // Errors
@@ -80,28 +81,44 @@ function convertChanges(changes) {
   });
 }
 
-function clearErrorMarks(cm) {
+function clearMarks(cm, className) {
   var i;
   var marks = cm.getAllMarks();
   for (i=0; i<marks.length; i++) {
-    if (marks[i].className === ERROR_CLASSNAME) {
+    if (marks[i].className === className) {
       marks[i].clear();
     }
   }
 }
 
-function addErrorMark(cm, lineNo, x) {
-  var from = {line: lineNo, ch: x};
-  var to = {line: lineNo, ch: x+1};
-  cm.markText(from, to, {className: ERROR_CLASSNAME});
+function clearAllMarks(cm) {
+  clearMarks(cm, CLASSNAME_ERROR);
+  clearMarks(cm, CLASSNAME_PARENTRAIL);
+}
+
+function addMark(cm, lineNo, x0, x1, className) {
+  var from = {line: lineNo, ch: x0};
+  var to = {line: lineNo, ch: x1};
+  cm.markText(from, to, {className: className});
 }
 
 function updateErrorMarks(cm, error) {
-  clearErrorMarks(cm);
+  clearMarks(cm, CLASSNAME_ERROR);
   if (error) {
-    addErrorMark(cm, error.lineNo, error.x);
+    addMark(cm, error.lineNo, error.x, error.x+1, CLASSNAME_ERROR);
     if (error.extra) {
-      addErrorMark(cm, error.extra.lineNo, error.extra.x);
+      addMark(cm, error.extra.lineNo, error.extra.x, error.extra.x+1, CLASSNAME_ERROR);
+    }
+  }
+}
+
+function updateParenTrailMarks(cm, parenTrails) {
+  clearMarks(cm, CLASSNAME_PARENTRAIL);
+  if (parenTrails) {
+    var i, trail;
+    for (i=0; i<parenTrails.length; i++) {
+      trail = parenTrails[i];
+      addMark(cm, trail.lineNo, trail.startX, trail.endX, CLASSNAME_PARENTRAIL);
     }
   }
 }
@@ -179,8 +196,9 @@ function fixText(state, changes) {
     default: ensureMode(mode);
   }
 
-  // Clear or add new error marks
+  // Clear or add new marks
   updateErrorMarks(cm, result.error);
+  updateParenTrailMarks(cm, result.parenTrails);
 
   if (text !== result.text) {
     // Update text
@@ -235,7 +253,7 @@ function off(state) {
   if (!state.enabled) {
     return;
   }
-  clearErrorMarks(state.cm);
+  clearAllMarks(state.cm);
   cm.off('cursorActivity', state.callbackCursor);
   cm.off('changes', state.callbackChanges);
   state.enabled = false;
