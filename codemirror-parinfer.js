@@ -1,3 +1,30 @@
+//
+// Parinfer for CodeMirror 1.0.0
+//
+// Copyright 2017 © Shaun Lebron
+// MIT License
+//
+
+//------------------------------------------------------------------------------
+// JS Module Boilerplate
+//------------------------------------------------------------------------------
+
+(function (root, factory) {
+  if (typeof define === 'function' && define.amd) {
+    define([], factory);
+  }
+  else if (typeof module === 'object' && module.exports) {
+    module.exports = factory();
+  }
+  else {
+    root.parinferCodeMirror = factory();
+  }
+}(this, function() { // start module anonymous scope
+"use strict";
+
+//------------------------------------------------------------------------------
+// Main
+//------------------------------------------------------------------------------
 
 function activate(cm) {
   var cursorTimeout;
@@ -17,7 +44,7 @@ function activate(cm) {
     });
   }
 
-  function fixText(cm, changes) {
+  function fixText(changes) {
     // if (changes) {
     //   console.log('processing after change');
     // } else {
@@ -62,13 +89,22 @@ function activate(cm) {
   cm.on('cursorActivity', function(cm) {
     clearTimeout(cursorTimeout);
     if (monitorCursor) {
-      cursorTimeout = setTimeout(function () { fixText(cm); }, 0);
+      cursorTimeout = setTimeout(function () { fixText(); }, 0);
     }
   });
   cm.on('changes', function(cm, changes) {
     if (changes[0].origin !== 'setValue') {
       clearTimeout(cursorTimeout);
-      fixText(cm, changes);
+      fixText(changes);
     }
   });
 }
+
+var API = {
+  version: "1.0.0",
+  activate: activate
+};
+
+return API;
+
+})); // end module anonymous scope

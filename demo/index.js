@@ -11,4 +11,4 @@ cm.setValue(`
       :prod prod}))
 `);
 
-activate(cm);
+parinferCodeMirror.activate(cm);
