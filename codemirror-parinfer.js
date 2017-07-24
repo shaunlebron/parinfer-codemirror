@@ -44,6 +44,33 @@ function activate(cm) {
     });
   }
 
+  var errorClassName = 'parinfer-error';
+  function clearErrorMarks() {
+    var i;
+    var marks = cm.getAllMarks();
+    for (i=0; i<marks.length; i++) {
+      if (marks[i].className === errorClassName) {
+        marks[i].clear();
+      }
+    }
+  }
+
+  function addErrorMark(lineNo, x) {
+    var from = {line: lineNo, ch: x};
+    var to = {line: lineNo, ch: x+1};
+    cm.markText(from, to, {className: errorClassName});
+  }
+
+  function updateError(error) {
+    clearErrorMarks();
+    if (error) {
+      addErrorMark(error.lineNo, error.x);
+      if (error.extra) {
+        addErrorMark(error.extra.lineNo, error.extra.x);
+      }
+    }
+  }
+
   function fixText(changes) {
     // if (changes) {
     //   console.log('processing after change');
@@ -67,6 +94,7 @@ function activate(cm) {
       options.changes = convertChanges(changes);
     }
     var result = parinfer.smartMode(text, options);
+    updateError(result.error);
     if (text === result.text) {
       return;
     }
