@@ -327,7 +327,8 @@ function setMode(cm, mode) {
   return fixText(state);
 }
 
-function setOptions(state, options) {
+function setOptions(cm, options) {
+  var state = ensureState(cm);
   state.options = options;
   return fixText(state);
 }
