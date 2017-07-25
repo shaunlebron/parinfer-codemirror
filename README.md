@@ -1,5 +1,3 @@
-> __NOTE__ work in progress
-
 # Parinfer for CodeMirror
 
 A [Parinfer] layer for the browser-based [CodeMirror] editor.
