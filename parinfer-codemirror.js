@@ -263,6 +263,7 @@ function on(state) {
   state.callbackChanges = function(cm, changes) {
     onTextChanges(state, changes);
   };
+  var cm = state.cm;
   cm.on('cursorActivity', state.callbackCursor);
   cm.on('changes', state.callbackChanges);
   state.origExtraKeys = cm.getOption('extraKeys');
@@ -276,7 +277,8 @@ function off(state) {
   if (!state.enabled) {
     return;
   }
-  clearAllMarks(state.cm);
+  var cm = state.cm;
+  clearAllMarks(cm);
   cm.off('cursorActivity', state.callbackCursor);
   cm.off('changes', state.callbackChanges);
   cm.setOption('extraKeys', state.origExtraKeys);
