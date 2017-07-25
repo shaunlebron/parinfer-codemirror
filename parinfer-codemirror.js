@@ -123,6 +123,17 @@ function updateParenTrailMarks(cm, parenTrails) {
   }
 }
 
+function onTab(cm) {
+  // Use spaces instead of tabs.
+  // from https://github.com/codemirror/CodeMirror/issues/988#issuecomment-14921785
+  if (cm.somethingSelected()) {
+    cm.indentSelection("add");
+  } else {
+    cm.replaceSelection(cm.getOption("indentWithTabs")? "\t":
+      Array(cm.getOption("indentUnit") + 1).join(" "), "end", "+input");
+  }
+}
+
 //------------------------------------------------------------------------------
 // Stateful CodeMirror functions
 // (`state` represents the parinfer state of a single CodeMirror editor)
@@ -254,6 +265,10 @@ function on(state) {
   };
   cm.on('cursorActivity', state.callbackCursor);
   cm.on('changes', state.callbackChanges);
+  state.origExtraKeys = cm.getOption('extraKeys');
+  cm.setOption('extraKeys', {
+    Tab: onTab
+  });
   state.enabled = true;
 }
 
@@ -264,6 +279,7 @@ function off(state) {
   clearAllMarks(state.cm);
   cm.off('cursorActivity', state.callbackCursor);
   cm.off('changes', state.callbackChanges);
+  cm.setOption('extraKeys', state.origExtraKeys);
   state.enabled = false;
 }
 
