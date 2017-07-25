@@ -7,7 +7,7 @@ A [Parinfer] layer for the browser-based [CodeMirror] editor.
 _used by Parinfer's official [demo editor] and [website] to demonstrate
 canonical plugin behavior_
 
-<img width="390" src="https://user-images.githubusercontent.com/116838/28582789-54f9acec-712c-11e7-8f70-60e95e8ba2ae.gif">
+<img width="340" src="https://user-images.githubusercontent.com/116838/28585541-1dd63352-7136-11e7-96a9-077e6e9a0699.gif">
 
 [demo editor]:http://shaunlebron.github.io/parinfer/demo
 [website]:http://shaunlebron.github.io/parinfer/
