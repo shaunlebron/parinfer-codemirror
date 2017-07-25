@@ -151,8 +151,9 @@ function onCursorChange(state) {
 }
 
 function onTextChanges(state, changes) {
-  if (changes[0].origin !== 'setValue') {
-    clearTimeout(state.cursorTimeout);
+  clearTimeout(state.cursorTimeout);
+  var origin = changes[0].origin;
+  if (origin !== 'setValue') {
     fixText(state, changes);
   }
 }
@@ -201,6 +202,9 @@ function fixText(state, changes) {
   updateParenTrailMarks(cm, result.parenTrails);
 
   if (text !== result.text) {
+    // Backup history
+    var hist = cm.getHistory();
+
     // Update text
     cm.setValue(result.text);
 
@@ -211,6 +215,10 @@ function fixText(state, changes) {
     } else {
       cm.setCursor(result.cursorLine, result.cursorX);
     }
+
+    // Restore history to avoid pushing our edits to the history stack.
+    cm.setHistory(hist);
+
     setTimeout(function(){ state.monitorCursor = true; }, 0);
 
     // Update scroll position
