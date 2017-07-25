@@ -208,10 +208,6 @@ function fixText(state, changes) {
     default: ensureMode(mode);
   }
 
-  // Clear or add new marks
-  updateErrorMarks(cm, result.error);
-  updateParenTrailMarks(cm, result.parenTrails);
-
   if (text !== result.text) {
     // Backup history
     var hist = cm.getHistory();
@@ -235,6 +231,10 @@ function fixText(state, changes) {
     // Update scroll position
     cm.scrollTo(scroller.scrollLeft, scroller.scrollTop);
   }
+
+  // Clear or add new marks
+  updateErrorMarks(cm, result.error);
+  updateParenTrailMarks(cm, result.parenTrails);
 
   // Remember the cursor position for next time
   state.prevCursorLine = result.cursorLine;
