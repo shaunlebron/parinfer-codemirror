@@ -268,7 +268,8 @@ function on(state) {
   cm.on('changes', state.callbackChanges);
   state.origExtraKeys = cm.getOption('extraKeys');
   cm.setOption('extraKeys', {
-    Tab: onTab
+    Tab: onTab,
+    'Shift-Tab': 'indentLess',
   });
   state.enabled = true;
 }
