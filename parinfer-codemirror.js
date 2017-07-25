@@ -1,5 +1,5 @@
 //
-// Parinfer for CodeMirror 1.1.0
+// Parinfer 1.2.0
 //
 // Copyright 2017 © Shaun Lebron
 // MIT License
@@ -335,7 +335,7 @@ function setOptions(cm, options) {
 }
 
 var API = {
-  version: "1.1.0",
+  version: "1.2.0",
   init: init,
   enable: enable,
   disable: disable,
