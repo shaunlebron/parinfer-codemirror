@@ -1,3 +1,7 @@
+# 1.3.0
+
+- tabbing will snap to structural tab-stops when available
+
 # 1.2.0
 
 - <kbd>Shift</kbd> + <kbd>Tab</kbd> dedents properly
