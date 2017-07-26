@@ -151,7 +151,16 @@ function updateParenTrailMarks(cm, parenTrails) {
 // Tab Stops
 //------------------------------------------------------------------------------
 
+function getSelectionStartLine(cm) {
+  var selection = cm.listSelections()[0];
+  // head and anchor are reversed sometimes
+  return Math.min(selection.head.line, selection.anchor.line);
+}
+
 function expandTabStops(tabStops) {
+  if (!tabStops) {
+    return null;
+  }
   var xs = [];
   var i, stop, prevX=-1;
   for (i=0; i<tabStops.length; i++) {
@@ -169,6 +178,9 @@ function expandTabStops(tabStops) {
 }
 
 function nextStop(stops, x, dx) {
+  if (!stops) {
+    return null;
+  }
   var i, stop, right, left;
   for (i=0; i<stops.length; i++) {
     stop = stops[i];
@@ -179,48 +191,45 @@ function nextStop(stops, x, dx) {
   if (dx === 1) { return right; }
 }
 
-function isCursorAtIndentPoint(cm) {
-  var cursor = cm.getCursor();
-  var line = cm.getLine(cursor.line);
-  var x = cursor.ch;
+function getIndent(cm, lineNo) {
+  var line = cm.getLine(lineNo);
   var i;
-  for (i=0; i<x; i++) {
+  for (i=0; i<line.length; i++) {
     if (line[i] !== ' ') {
-      return false;
+      return i;
     }
   }
-  return line[x] !== ' ';
+  return null;
 }
 
 function onTab(cm, dx) {
   var hasSelection = cm.somethingSelected();
-  var cursor = cm.getCursor();
-  var lineNo = cursor.line;
-  var x = cursor.ch;
   var state = ensureState(cm);
+  var stops = expandTabStops(state.tabStops);
+
+  var x, nextX, lineNo;
 
   if (hasSelection) {
     // Indent whole Selection
-    // TODO: use tab stops
-    // var selections = cm.listSelections();
-    if (dx === 1) {
-      cm.indentSelection("add");
+    lineNo = getSelectionStartLine(cm);
+    x = getIndent(cm, lineNo);
+    nextX = nextStop(stops, x, dx);
+    if (nextX == null) {
+      nextX = Math.max(0, x + dx*2);
     }
-    else if (dx === -1) {
-      cm.indentSelection("subtract");
-    }
+    cm.indentSelection(nextX-x);
   }
   else {
     // Indent single line at cursor
-    var nextX = x + dx*2;
-    if (state.tabStops && isCursorAtIndentPoint(cm)) {
-      var stops = expandTabStops(state.tabStops);
-      var stop = nextStop(stops, x, dx);
-      if (stop != null) {
-        nextX = stop;
-      }
+    var cursor = cm.getCursor();
+    lineNo = cursor.line;
+    x = cursor.ch;
+    if (x === getIndent(cm, cursor.line)) {
+      nextX = nextStop(stops, x, dx);
     }
-    nextX = Math.max(0, nextX);
+    if (nextX == null) {
+      nextX = Math.max(0, x + dx*2);
+    }
     cm.indentLine(lineNo, nextX-x);
   }
 }
@@ -246,6 +255,9 @@ function fixText(state, changes) {
     prevCursorLine: state.prevCursorLine,
     prevCursorX: state.prevCursorX
   };
+  if (hasSelection) {
+    options.selectionStartLine = getSelectionStartLine(cm);
+  }
   if (state.options) {
     var p;
     for (p in state.options) {
