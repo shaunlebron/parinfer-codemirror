@@ -1,5 +1,5 @@
 //
-// Parinfer 1.2.0
+// Parinfer for CodeMirror 1.2.0
 //
 // Copyright 2017 © Shaun Lebron
 // MIT License
