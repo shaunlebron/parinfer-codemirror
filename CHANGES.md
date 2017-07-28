@@ -1,3 +1,8 @@
+# 1.3.1
+
+- fix: allow pressing Tab and Shift+Tab on an empty line
+- fix: pressing Tab inside a line will just insert spaces
+
 # 1.3.0
 
 - tabbing will snap to structural tab-stops when available
