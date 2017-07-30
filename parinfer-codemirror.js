@@ -292,14 +292,19 @@ function hideParens(cm, parens) {
   }
 }
 
-function parenPos(cm, paren) {
+function charPos(cm, paren) {
   var p = cm.charCoords({line: paren.lineNo, ch: paren.x}, "local");
   var w = p.right - p.left;
   return {
-    x: p.left + w/2,
+    midx: p.left + w/2,
+    right: p.right,
+    left: p.left,
     top: p.top,
     bottom: p.bottom,
   };
+}
+
+function get(cm, lineNo) {
 }
 
 function addBox(cm, paren) {
@@ -308,16 +313,43 @@ function addBox(cm, paren) {
   var charW = locus.charW;
   var charH = locus.charH;
 
-  var open = parenPos(cm, paren);
-  var close = parenPos(cm, paren.closer);
-  console.log(open, close);
+  var open = charPos(cm, paren);
+  var close = charPos(cm, paren.closer);
 
-  paper.rect(
-    open.x,
-    open.top,
-    close.x - open.x,
-    close.bottom - open.top
-  );
+  if (paren.lineNo === paren.closer.lineNo) {
+    paper.path([
+      'M', open.midx, open.top,
+      'H', close.midx,
+      'V', close.bottom,
+      'H', open.midx,
+      'Z'
+    ].join(' '));
+  }
+  else {
+    var i;
+    var doc = cm.getDoc();
+    var maxWidth=0;
+    var maxLineNo=0;
+    var wall;
+    for (i=paren.lineNo; i<=paren.closer.lineNo; i++) {
+      var line = doc.getLine(i);
+      if (line.length > maxWidth) {
+        maxWidth = line.length;
+        maxLineNo = i;
+      }
+    }
+    var wall = charPos(cm, {lineNo: maxLineNo, x: maxWidth});
+
+    paper.path([
+      'M', open.midx, open.top,
+      'H', wall.right,
+      'V', close.top,
+      'H', close.right,
+      'V', close.bottom,
+      'H', open.midx,
+      'Z'
+    ].join(' '));
+  }
 
   addBoxes(cm, paren.children);
 }
