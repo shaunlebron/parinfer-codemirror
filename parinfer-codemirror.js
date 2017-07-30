@@ -281,7 +281,9 @@ function getLocusContainer(cm) {
 
 function hideParen(cm, paren) {
   // addMark(cm, paren.lineNo, paren.x, paren.x+1, CLASSNAME_LOCUS_PAREN);
-  addMark(cm, paren.closer.lineNo, paren.closer.x, paren.closer.x+1, CLASSNAME_LOCUS_PAREN);
+  if (paren.lineNo !== paren.closer.lineNo) {
+    addMark(cm, paren.closer.lineNo, paren.closer.x, paren.closer.x+1, CLASSNAME_LOCUS_PAREN);
+  }
   hideParens(cm, paren.children);
 }
 
@@ -313,15 +315,14 @@ function addBox(cm, paren) {
   var open = charPos(cm, paren);
   var close = charPos(cm, paren.closer);
 
-  var dip = 3;
+  var r = 4;
 
   if (paren.lineNo === paren.closer.lineNo) {
     paper.path([
-      'M', open.midx, open.top+dip,
-      'V', open.top,
-      'H', close.midx,
-      'V', close.bottom,
-      'H', open.midx,
+      'M', open.midx, open.top+r,
+      'A', r, r, 0, 0, 1, open.midx+r, open.top,
+      'H', close.midx-r,
+      'A', r, r, 0, 0, 1, close.midx, open.top+r,
     ].join(' '));
   }
   else {
@@ -340,9 +341,10 @@ function addBox(cm, paren) {
     var wall = charPos(cm, {lineNo: maxLineNo, x: maxWidth});
 
     paper.path([
-      'M', open.midx, open.top+dip,
-      'V', open.top,
-      'H', wall.right,
+      'M', open.midx, open.top+r,
+      'A', r, r, 0, 0, 1, open.midx+r, open.top,
+      'H', wall.right-r,
+      'A', r, r, 0, 0, 1, wall.right, open.top+r,
       'V', close.top,
       'H', close.right,
       'V', close.bottom,
