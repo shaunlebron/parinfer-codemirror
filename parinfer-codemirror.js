@@ -37,6 +37,9 @@ var MODES = [PAREN_MODE, INDENT_MODE, SMART_MODE];
 
 var CLASSNAME_ERROR = 'parinfer-error';
 var CLASSNAME_PARENTRAIL = 'parinfer-paren-trail';
+var CLASSNAME_LOCUS_PAREN = 'parinfer-locus-paren';
+
+var CLASSNAME_LOCUS_LAYER = 'parinfer-locus';
 
 //------------------------------------------------------------------------------
 // State
@@ -266,6 +269,103 @@ function onTab(cm, dx) {
 }
 
 //------------------------------------------------------------------------------
+// Locus layer
+//------------------------------------------------------------------------------
+
+function getLocusContainer(cm) {
+  var wrapper = cm.getWrapperElement();
+  var lines = wrapper.querySelector('.CodeMirror-lines');
+  var container = lines.parentNode;
+  return container;
+}
+
+function hideParen(cm, paren) {
+  addMark(cm, paren.lineNo, paren.x, paren.x+1, CLASSNAME_LOCUS_PAREN);
+  addMark(cm, paren.closer.lineNo, paren.closer.x, paren.closer.x+1, CLASSNAME_LOCUS_PAREN);
+  hideParens(cm, paren.children);
+}
+
+function hideParens(cm, parens) {
+  var i;
+  for (i=0; i<parens.length; i++) {
+    hideParen(cm, parens[i]);
+  }
+}
+
+function parenPos(cm, paren) {
+  var p = cm.charCoords({line: paren.lineNo, ch: paren.x}, "local");
+  var w = p.right - p.left;
+  return {
+    x: p.left + w/2,
+    top: p.top,
+    bottom: p.bottom,
+  };
+}
+
+function addBox(cm, paren) {
+  var locus = cm[STATE_PROP].locus;
+  var paper = locus.paper;
+  var charW = locus.charW;
+  var charH = locus.charH;
+
+  var open = parenPos(cm, paren);
+  var close = parenPos(cm, paren.closer);
+  console.log(open, close);
+
+  paper.rect(
+    open.x,
+    open.top,
+    close.x - open.x,
+    close.bottom - open.top
+  );
+
+  addBoxes(cm, paren.children);
+}
+
+function addBoxes(cm, parens) {
+  var i;
+  for (i=0; i<parens.length; i++) {
+    addBox(cm, parens[i]);
+  }
+}
+
+function addLocus(cm) {
+  var locus = cm[STATE_PROP].locus;
+
+  var el = document.createElement('div');
+  el.style.position = 'absolute';
+  el.style.left = '0';
+  el.style.top = '0';
+  el.style['z-index'] = 100;
+  el.className = CLASSNAME_LOCUS_LAYER;
+
+  locus.el = el;
+  locus.container.appendChild(el);
+
+  var pixelW = locus.container.clientWidth;
+  var pixelH = locus.container.clientHeight;
+
+  locus.paper = Raphael(el, pixelW, pixelH);
+}
+
+function clearLocus(cm) {
+  var locus = cm[STATE_PROP].locus;
+  if (locus && locus.el) {
+    locus.container.removeChild(locus.el);
+  }
+}
+
+function updateLocusLayer(cm, parens) {
+  clearMarks(cm, CLASSNAME_LOCUS_PAREN);
+  if (parens) {
+    hideParens(cm, parens);
+    clearLocus(cm);
+    addLocus(cm);
+    addBoxes(cm, parens);
+  }
+}
+
+//------------------------------------------------------------------------------
 // Text Correction
 //------------------------------------------------------------------------------
 
@@ -301,6 +401,13 @@ function fixText(state, changes) {
     options.changes = convertChanges(changes);
   }
 
+  var locus = state.options && state.options.locus;
+
+  if (locus) {
+    delete options.locus;
+    options.returnParens = true;
+  }
+
   // Run Parinfer
   var result;
   var mode = state.fixMode ? PAREN_MODE : state.mode;
@@ -310,6 +417,9 @@ function fixText(state, changes) {
     case SMART_MODE:  result = parinfer.smartMode(text, options); break;
     default: ensureMode(mode);
   }
+
+  // Remember the paren tree.
+  state.parens = result.parens;
 
   // Remember tab stops for smart tabbing.
   state.tabStops = result.tabStops;
@@ -341,6 +451,10 @@ function fixText(state, changes) {
   // Clear or add new marks
   updateErrorMarks(cm, result.error);
   updateParenTrailMarks(cm, result.parenTrails);
+
+  if (locus) {
+    updateLocusLayer(cm, result.parens);
+  }
 
   // Remember the cursor position for next time
   state.prevCursorLine = result.cursorLine;
@@ -422,6 +536,12 @@ function init(cm, mode, options) {
 
   state = initialState(cm, mode, options);
   cm[STATE_PROP] = state;
+
+  if (options && options.locus) {
+    state.locus = {
+      container: getLocusContainer(cm)
+    };
+  }
   return enable(cm);
 }
 
