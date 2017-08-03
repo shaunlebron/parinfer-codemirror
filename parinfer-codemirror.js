@@ -293,7 +293,6 @@ function pointRevealsParenTrail(trail, pos) {
 function hideParen(cm, paren) {
   var sel = cm.getDoc().sel;
   var sel0 = sel.ranges[0];
-  console.log(sel);
   var shouldShowCloser = (
     paren.lineNo === paren.closer.lineNo ||
     !paren.closer.trail ||
@@ -368,8 +367,6 @@ function addBox(cm, paren) {
       'A', r, r, 0, 0, 1, open.midx+r, open.top,
       'H', wall.right-r,
       'A', r, r, 0, 0, 1, wall.right, open.top+r,
-      'V', close.top,
-      'H', close.right,
       'V', close.bottom,
       'H', open.midx,
       'V', open.bottom
