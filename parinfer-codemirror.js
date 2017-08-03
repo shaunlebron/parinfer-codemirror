@@ -280,8 +280,18 @@ function getLocusContainer(cm) {
 }
 
 function hideParen(cm, paren) {
-  // addMark(cm, paren.lineNo, paren.x, paren.x+1, CLASSNAME_LOCUS_PAREN);
-  if (paren.lineNo !== paren.closer.lineNo) {
+  var state = cm[STATE_PROP];
+  var cursorX = state.prevCursorX;
+  var cursorLine = state.prevCursorLine;
+
+  var trail = paren.closer.trail;
+  var shouldShowCloser = (
+    paren.lineNo === paren.closer.lineNo ||
+    !trail ||
+    (cursorLine === paren.closer.lineNo &&
+     trail.startX <= cursorX && cursorX <= trail.endX)
+  );
+  if (!shouldShowCloser) {
     addMark(cm, paren.closer.lineNo, paren.closer.x, paren.closer.x+1, CLASSNAME_LOCUS_PAREN);
   }
   hideParens(cm, paren.children);
@@ -318,14 +328,16 @@ function addBox(cm, paren) {
   var r = 4;
 
   if (paren.lineNo === paren.closer.lineNo) {
+    /*
     paper.path([
       'M', open.midx, open.top+r,
       'A', r, r, 0, 0, 1, open.midx+r, open.top,
       'H', close.midx-r,
       'A', r, r, 0, 0, 1, close.midx, open.top+r,
     ].join(' '));
+    */
   }
-  else {
+  else if (paren.closer.trail) {
     var i;
     var doc = cm.getDoc();
     var maxWidth=0;
@@ -486,13 +498,13 @@ function fixText(state, changes) {
   updateErrorMarks(cm, result.error);
   updateParenTrailMarks(cm, result.parenTrails);
 
-  if (locus) {
-    updateLocusLayer(cm, result.parens);
-  }
-
   // Remember the cursor position for next time
   state.prevCursorLine = result.cursorLine;
   state.prevCursorX = result.cursorX;
+
+  if (locus) {
+    updateLocusLayer(cm, result.parens);
+  }
 
   // Re-run with original mode if code was finally fixed in Paren Mode.
   if (state.fixMode && result.success) {
