@@ -279,18 +279,28 @@ function getLocusContainer(cm) {
   return container;
 }
 
-function hideParen(cm, paren) {
-  var state = cm[STATE_PROP];
-  var cursorX = state.prevCursorX;
-  var cursorLine = state.prevCursorLine;
+function parenSelected(paren, selection) {
+  // console.log('selection', JSON.stringify(selection, null, 2));
+}
 
-  var trail = paren.closer.trail;
+function cursorRevealsParenTrail(trail, cursor) {
+  return (
+    cursor.line === trail.lineNo &&
+    trail.startX <= cursor.ch /* && cursor.ch <= trail.endX */
+  );
+}
+
+function hideParen(cm, paren) {
+  var cursor = cm.getCursor();
+  var selection = cm.somethingSelected() ? cm.listSelections()[0] : null;
+
   var shouldShowCloser = (
     paren.lineNo === paren.closer.lineNo ||
-    !trail ||
-    (cursorLine === paren.closer.lineNo &&
-     trail.startX <= cursorX && cursorX <= trail.endX)
+    !paren.closer.trail ||
+    cursorRevealsParenTrail(paren.closer.trail, cursor) ||
+    parenSelected(paren.closer, selection)
   );
+
   if (!shouldShowCloser) {
     addMark(cm, paren.closer.lineNo, paren.closer.x, paren.closer.x+1, CLASSNAME_LOCUS_PAREN);
   }

@@ -1,1 +1,1 @@
-../node_modules/parinfer/parinfer.js
+/Users/swilliam/code/parinfer/lib/parinfer.js
