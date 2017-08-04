@@ -326,7 +326,23 @@ function charPos(cm, paren) {
   };
 }
 
-function addBox(cm, paren) {
+function getRightBound(cm, startLine, endLine) {
+  var doc = cm.getDoc();
+  var maxWidth=0;
+  var maxLineNo=0;
+  var i;
+  for (i=startLine; i<=endLine; i++) {
+    var line = doc.getLine(i);
+    if (line.length > maxWidth) {
+      maxWidth = line.length;
+      maxLineNo = i;
+    }
+  }
+  var wall = charPos(cm, {lineNo: maxLineNo, x: maxWidth});
+  return wall.right;
+}
+
+function addBox(cm, paren, presetRight) {
   var locus = cm[STATE_PROP].locus;
   var paper = locus.paper;
   var charW = locus.charW;
@@ -336,50 +352,28 @@ function addBox(cm, paren) {
   var close = charPos(cm, paren.closer);
 
   var r = 4;
+  var right = presetRight;
 
-  if (paren.lineNo === paren.closer.lineNo) {
-    /*
+  if (paren.closer.trail && paren.lineNo !== paren.closer.lineNo) {
+    right = presetRight || getRightBound(cm, paren.lineNo, paren.closer.lineNo);
     paper.path([
       'M', open.midx, open.top+r,
       'A', r, r, 0, 0, 1, open.midx+r, open.top,
-      'H', close.midx-r,
-      'A', r, r, 0, 0, 1, close.midx, open.top+r,
-    ].join(' '));
-    */
-  }
-  else if (paren.closer.trail) {
-    var i;
-    var doc = cm.getDoc();
-    var maxWidth=0;
-    var maxLineNo=0;
-    var wall;
-    for (i=paren.lineNo; i<=paren.closer.lineNo; i++) {
-      var line = doc.getLine(i);
-      if (line.length > maxWidth) {
-        maxWidth = line.length;
-        maxLineNo = i;
-      }
-    }
-    var wall = charPos(cm, {lineNo: maxLineNo, x: maxWidth});
-
-    paper.path([
-      'M', open.midx, open.top+r,
-      'A', r, r, 0, 0, 1, open.midx+r, open.top,
-      'H', wall.right-r,
-      'A', r, r, 0, 0, 1, wall.right, open.top+r,
+      'H', right-r,
+      'A', r, r, 0, 0, 1, right, open.top+r,
       'V', close.bottom,
       'H', open.midx,
       'V', open.bottom
     ].join(' '));
   }
 
-  addBoxes(cm, paren.children);
+  addBoxes(cm, paren.children, right);
 }
 
-function addBoxes(cm, parens) {
+function addBoxes(cm, parens, right) {
   var i;
   for (i=0; i<parens.length; i++) {
-    addBox(cm, parens[i]);
+    addBox(cm, parens[i], right);
   }
 }
 
@@ -415,7 +409,7 @@ function updateLocusLayer(cm, parens) {
     hideParens(cm, parens);
     clearLocus(cm);
     addLocus(cm);
-    addBoxes(cm, parens);
+    addBoxes(cm, parens, 0);
   }
 }
 
