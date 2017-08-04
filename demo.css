@@ -18,11 +18,3 @@ html, body {
   padding: 10px;
   height: 100%;
 }
-
-.parinfer-locus-paren {
-  visibility: hidden;
-}
-.parinfer-locus {
-  opacity: 0.1;
-  pointer-events: none;
-}
