@@ -342,7 +342,7 @@ function getRightBound(cm, startLine, endLine) {
   return wall.right;
 }
 
-function addBox(cm, paren, presetRight) {
+function addBox(cm, paren) {
   var locus = cm[STATE_PROP].locus;
   var paper = locus.paper;
   var charW = locus.charW;
@@ -352,10 +352,9 @@ function addBox(cm, paren, presetRight) {
   var close = charPos(cm, paren.closer);
 
   var r = 4;
-  var right = presetRight;
 
   if (paren.closer.trail && paren.lineNo !== paren.closer.lineNo) {
-    right = presetRight || getRightBound(cm, paren.lineNo, paren.closer.lineNo);
+    var right = getRightBound(cm, paren.lineNo, paren.closer.lineNo);
     paper.path([
       'M', open.midx, open.top+r,
       'A', r, r, 0, 0, 1, open.midx+r, open.top,
@@ -367,13 +366,13 @@ function addBox(cm, paren, presetRight) {
     ].join(' '));
   }
 
-  addBoxes(cm, paren.children, right);
+  addBoxes(cm, paren.children);
 }
 
-function addBoxes(cm, parens, right) {
+function addBoxes(cm, parens) {
   var i;
   for (i=0; i<parens.length; i++) {
-    addBox(cm, parens[i], right);
+    addBox(cm, parens[i]);
   }
 }
 
@@ -409,7 +408,7 @@ function updateLocusLayer(cm, parens) {
     hideParens(cm, parens);
     clearLocus(cm);
     addLocus(cm);
-    addBoxes(cm, parens, 0);
+    addBoxes(cm, parens);
   }
 }
 
