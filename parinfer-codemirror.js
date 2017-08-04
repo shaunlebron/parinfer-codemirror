@@ -269,10 +269,10 @@ function onTab(cm, dx) {
 }
 
 //------------------------------------------------------------------------------
-// Locus layer
+// Locus/Guides layer
 //------------------------------------------------------------------------------
 
-function getLocusContainer(cm) {
+function getLayerContainer(cm) {
   var wrapper = cm.getWrapperElement();
   var lines = wrapper.querySelector('.CodeMirror-lines');
   var container = lines.parentNode;
@@ -343,10 +343,10 @@ function getRightBound(cm, startLine, endLine) {
 }
 
 function addBox(cm, paren) {
-  var locus = cm[STATE_PROP].locus;
-  var paper = locus.paper;
-  var charW = locus.charW;
-  var charH = locus.charH;
+  var layer = cm[STATE_PROP].layer;
+  var paper = layer.paper;
+  var charW = layer.charW;
+  var charH = layer.charH;
 
   var open = charPos(cm, paren);
   var close = charPos(cm, paren.closer);
@@ -354,16 +354,26 @@ function addBox(cm, paren) {
   var r = 4;
 
   if (paren.closer.trail && paren.lineNo !== paren.closer.lineNo) {
-    var right = getRightBound(cm, paren.lineNo, paren.closer.lineNo);
-    paper.path([
-      'M', open.midx, open.top+r,
-      'A', r, r, 0, 0, 1, open.midx+r, open.top,
-      'H', right-r,
-      'A', r, r, 0, 0, 1, right, open.top+r,
-      'V', close.bottom,
-      'H', open.midx,
-      'V', open.bottom
-    ].join(' '));
+    switch (layer.type) {
+      case 'guides':
+        paper.path([
+          'M', open.midx, open.bottom,
+          'V', close.bottom
+        ].join(' '));
+        break;
+      case 'locus':
+        var right = getRightBound(cm, paren.lineNo, paren.closer.lineNo);
+        paper.path([
+          'M', open.midx, open.top+r,
+          'A', r, r, 0, 0, 1, open.midx+r, open.top,
+          'H', right-r,
+          'A', r, r, 0, 0, 1, right, open.top+r,
+          'V', close.bottom,
+          'H', open.midx,
+          'V', open.bottom
+        ].join(' '));
+        break;
+    }
   }
 
   addBoxes(cm, paren.children);
@@ -376,8 +386,9 @@ function addBoxes(cm, parens) {
   }
 }
 
-function addLocus(cm) {
-  var locus = cm[STATE_PROP].locus;
+function addLayer(cm, type) {
+  var layer = cm[STATE_PROP].layer;
+  layer.type = type;
 
   var el = document.createElement('div');
   el.style.position = 'absolute';
@@ -386,19 +397,19 @@ function addLocus(cm) {
   el.style['z-index'] = 100;
   el.className = CLASSNAME_LOCUS_LAYER;
 
-  locus.el = el;
-  locus.container.appendChild(el);
+  layer.el = el;
+  layer.container.appendChild(el);
 
-  var pixelW = locus.container.clientWidth;
-  var pixelH = locus.container.clientHeight;
+  var pixelW = layer.container.clientWidth;
+  var pixelH = layer.container.clientHeight;
 
-  locus.paper = Raphael(el, pixelW, pixelH);
+  layer.paper = Raphael(el, pixelW, pixelH);
 }
 
-function clearLocus(cm) {
-  var locus = cm[STATE_PROP].locus;
-  if (locus && locus.el) {
-    locus.container.removeChild(locus.el);
+function clearLayer(cm) {
+  var layer = cm[STATE_PROP].layer;
+  if (layer && layer.el) {
+    layer.container.removeChild(layer.el);
   }
 }
 
@@ -406,8 +417,16 @@ function updateLocusLayer(cm, parens) {
   clearMarks(cm, CLASSNAME_LOCUS_PAREN);
   if (parens) {
     hideParens(cm, parens);
-    clearLocus(cm);
-    addLocus(cm);
+    clearLayer(cm);
+    addLayer(cm, 'locus');
+    addBoxes(cm, parens);
+  }
+}
+
+function updateGuidesLayer(cm, parens) {
+  if (parens) {
+    clearLayer(cm);
+    addLayer(cm, 'guides');
     addBoxes(cm, parens);
   }
 }
@@ -449,9 +468,11 @@ function fixText(state, changes) {
   }
 
   var locus = state.options && state.options.locus;
+  var guides = state.options && state.options.guides;
 
-  if (locus) {
+  if (locus || guides) {
     delete options.locus;
+    delete options.guides;
     options.returnParens = true;
   }
 
@@ -505,6 +526,8 @@ function fixText(state, changes) {
 
   if (locus) {
     updateLocusLayer(cm, result.parens);
+  } else if (guides) {
+    updateGuidesLayer(cm, result.parens);
   }
 
   // Re-run with original mode if code was finally fixed in Paren Mode.
@@ -584,11 +607,9 @@ function init(cm, mode, options) {
   state = initialState(cm, mode, options);
   cm[STATE_PROP] = state;
 
-  if (options && options.locus) {
-    state.locus = {
-      container: getLocusContainer(cm)
-    };
-  }
+  state.layer = {
+    container: getLayerContainer(cm)
+  };
   return enable(cm);
 }
 
