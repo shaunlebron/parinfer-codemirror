@@ -1,3 +1,7 @@
+# 1.3.2
+
+- fix: preserve user keys ([#9](https://github.com/shaunlebron/parinfer-codemirror/pull/9))
+
 # 1.3.1
 
 - fix: allow pressing Tab and Shift+Tab on an empty line
