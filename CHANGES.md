@@ -1,3 +1,7 @@
+# 1.4.0
+
+- early preview of `locus: true` (auto-folds parens represented by indent guides)
+
 # 1.3.2
 
 - fix: preserve user keys ([#9](https://github.com/shaunlebron/parinfer-codemirror/pull/9))
