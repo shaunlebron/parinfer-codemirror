@@ -418,7 +418,8 @@ function updateLocusLayer(cm, parens) {
   if (parens) {
     hideParens(cm, parens);
     clearLayer(cm);
-    addLayer(cm, 'locus');
+    // addLayer(cm, 'locus'); // don't draw boxes, just draw guides
+    addLayer(cm, 'guides');
     addBoxes(cm, parens);
   }
 }
