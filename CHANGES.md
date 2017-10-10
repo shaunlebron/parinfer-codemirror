@@ -1,3 +1,7 @@
+# 1.4.1
+
+- forgot to sync version in 1.4.0
+
 # 1.4.0
 
 - early preview of `locus: true` (auto-folds parens represented by indent guides)
