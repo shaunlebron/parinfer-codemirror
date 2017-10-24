@@ -1,5 +1,5 @@
 //
-// Parinfer for CodeMirror 1.4.1
+// Parinfer for CodeMirror 1.4.2
 //
 // Copyright 2017 © Shaun Lebron
 // MIT License
@@ -7,19 +7,20 @@
 
 //------------------------------------------------------------------------------
 // JS Module Boilerplate
+// ('parinfer' is a dependency handled differently depending on environment)
 //------------------------------------------------------------------------------
 
 (function (root, factory) {
   if (typeof define === 'function' && define.amd) {
-    define([], factory);
+    define(['parinfer'], factory);
   }
   else if (typeof module === 'object' && module.exports) {
-    module.exports = factory();
+    module.exports = factory(require('parinfer'));
   }
   else {
-    root.parinferCodeMirror = factory();
+    root.parinferCodeMirror = factory(root.parinfer);
   }
-}(this, function() { // start module anonymous scope
+}(this, function(parinfer) { // start module anonymous scope
 "use strict";
 
 //------------------------------------------------------------------------------
@@ -645,7 +646,7 @@ function setOptions(cm, options) {
 }
 
 var API = {
-  version: "1.4.1",
+  version: "1.4.2",
   init: init,
   enable: enable,
   disable: disable,

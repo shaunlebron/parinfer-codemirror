@@ -1,3 +1,7 @@
+# 1.4.2
+
+- make `parinfer` a proper [UMD dependency](https://github.com/umdjs/umd/blob/master/templates/returnExports.js) (thanks [@deraen](https://github.com/deraen))
+
 # 1.4.1
 
 - forgot to sync version in 1.4.0
