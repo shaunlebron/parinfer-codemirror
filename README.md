@@ -12,9 +12,13 @@ canonical plugin behavior_
 [demo editor]:http://shaunlebron.github.io/parinfer/demo
 [website]:http://shaunlebron.github.io/parinfer/
 
+## Demo
+
+Run `npm install` and open [demo.html] for working example.
+
 ## Usage
 
-Attach Parinfer to a CodeMirror instance.  See [demo.html] for working example.
+Attach Parinfer to a CodeMirror instance:
 
 ```js
 parinferCodeMirror.init(cm);
